@@ -1,15 +1,14 @@
-// log reciever module
+// log_receiver module
 
-// use std::thread;
+
 use super::log_common;
 
 pub mod circular_buffer;
 
+/// How often to stop waiting in receive and check state
+const POLLING_RECV_TIMEOUT: std::time::Duration = std::time::Duration::from_millis(1000);
 
-// const BUFFER_SIZE: usize = 0x0200;
-const POLLING_RECV_TIMEOUT: std::time::Duration = std::time::Duration::from_millis(500);
-
-
+/// Available buffer sizes in number of messages
 #[derive(Debug, Copy, Clone)]
 #[repr(usize)]
 pub enum BufferSize{
@@ -24,9 +23,18 @@ pub enum BufferSize{
 }
 
 impl BufferSize{
+
+  /// Value of enum as usize
+  /// 
+  /// Returns size in qty of messages
   pub fn value(&self) -> usize{
       return (*self).clone() as usize;
   }
+
+  /// Verify assigned enum value is valid
+  /// 
+  /// Value must be a power of 2,
+  /// in range 16..=2048
   pub fn is_valid(&self) -> bool{
       let v = (*self).clone() as usize;
       let mut ans = true;
@@ -43,10 +51,10 @@ impl BufferSize{
   }
 }
 
-
+/// Spawn a thread containing a `LogReceiver` and buffer for messages
 pub fn spawn(
     log_dump_level: log_common::Level,
-    reciever: std::sync::mpsc::Receiver<log_common::LogData>,
+    receiver: std::sync::mpsc::Receiver<log_common::LogData>,
     log_file_path: std::path::PathBuf,
     buffer_size: BufferSize,
 ) -> Option<std::thread::JoinHandle<()>> {
@@ -62,7 +70,7 @@ pub fn spawn(
         let circle = circular_buffer::CircularStringsBuffer::new(buffer, text_data_writer);
 
         Some(std::thread::spawn(move || {    
-            let mut logger = LogReciever::new(log_dump_level, reciever, log_file_path, circle);
+            let mut logger = LogReceiver::new(log_dump_level, receiver, log_file_path, circle);
             logger.execute();
         })) // returns thread handle
 
@@ -71,38 +79,45 @@ pub fn spawn(
     }
 }
 
-struct LogReciever<T: circular_buffer::TextDataWriter + Send> {
+struct LogReceiver<T: circular_buffer::TextDataWriter + Send> {
     log_dump_level: log_common::Level,
-    reciever: std::sync::mpsc::Receiver<log_common::LogData>,
+    receiver: std::sync::mpsc::Receiver<log_common::LogData>,
     log_file_path: std::path::PathBuf,
     buffer: circular_buffer::CircularStringsBuffer::<T>,
 }
 
-impl<T: circular_buffer::TextDataWriter + Send> LogReciever<T> {
+impl<T: circular_buffer::TextDataWriter + Send> LogReceiver<T> {
     fn new(
         log_dump_level: log_common::Level,
-        reciever: std::sync::mpsc::Receiver<log_common::LogData>,
+        receiver: std::sync::mpsc::Receiver<log_common::LogData>,
         log_file_path: std::path::PathBuf,
         buffer: circular_buffer::CircularStringsBuffer::<T>,
     ) -> Self {
         Self {
             log_dump_level,
-            reciever,
+            receiver,
             log_file_path,
             buffer,
         }
     }
 
+    /// Main loop for receiver thread 
+    /// 
+    /// Will return on two conditions
+    /// * If message payload has log level `log_common::Level::Off`
+    /// * If MPSC connection drops indicating there is nothing connected at the other end
+    /// 
     fn execute(&mut self) {
         debug_assert!(log_common::Level::Off != self.log_dump_level); // execute should not be called if log_dump_level is Off
         loop {
-            let msg = self.reciever.recv_timeout(POLLING_RECV_TIMEOUT);
+            let msg = self.receiver.recv_timeout(POLLING_RECV_TIMEOUT);
             if let Ok(payload) = msg {
                 self.buffer.push(payload.as_string());
 
                 if payload.level() > self.log_dump_level {
                     // NOP for common case
                 } else if payload.level() == log_common::Level::Off {
+                    // Off is signal to exit thread aka turn off
                     break;
                 } else if payload.level() <= self.log_dump_level {
                     self.dump();
@@ -126,6 +141,9 @@ impl<T: circular_buffer::TextDataWriter + Send> LogReciever<T> {
         }
     }
 
+    /// Dump all buffered data to output file
+    /// 
+    /// Clears buffer after write
     fn dump(&mut self) {
         let _r = self.buffer.write_to_file_and_clear(&self.log_file_path);
         #[cfg(debug_assertions)]

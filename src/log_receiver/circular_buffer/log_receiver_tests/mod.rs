@@ -1,16 +1,16 @@
 #![cfg(test)]
 
 use super::super::log_common;
-use super::super::super::log_reciever::BufferSize;
+use super::super::super::log_receiver::BufferSize;
 
 use super::super::circular_buffer::circular_buffer_tests::mock_writer;
 use super::super::circular_buffer::circular_buffer_tests::mock_writer::MockTextFile;
 use super::super::circular_buffer;
-use super::super::LogReciever;
+use super::super::LogReceiver;
 
 fn spawn_mocked(
     log_dump_level: log_common::Level,
-    reciever: std::sync::mpsc::Receiver<log_common::LogData>,
+    receiver: std::sync::mpsc::Receiver<log_common::LogData>,
     log_file_path: std::path::PathBuf,
     buffer_size: BufferSize,
 ) -> Option<MockTextFile> {
@@ -26,7 +26,7 @@ fn spawn_mocked(
         let circle = circular_buffer::CircularStringsBuffer::new(buffer, text_data_writer);
 
         std::thread::spawn(move || {    
-            let mut logger = LogReciever::new(log_dump_level, reciever, log_file_path, circle);
+            let mut logger = LogReceiver::new(log_dump_level, receiver, log_file_path, circle);
             logger.execute();
         });
         Some(mock_file) // return mock file

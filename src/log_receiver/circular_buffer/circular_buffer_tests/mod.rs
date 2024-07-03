@@ -8,7 +8,6 @@ pub mod mock_writer;
 #[test]
 fn test_init() {
     const BUFFER_SIZE: usize = 0x10;
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {
@@ -32,7 +31,6 @@ fn test_init() {
 #[test]
 fn test_invalid() {
     const BUFFER_SIZE: usize = 10; // 0x0A is not a valid buffer size
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {
@@ -48,7 +46,6 @@ fn test_invalid() {
 #[test]
 fn test_wrap() {
     const BUFFER_SIZE: usize = 0x10;
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {
@@ -75,7 +72,6 @@ fn test_wrap() {
 #[test]
 fn test_reset() {
     const BUFFER_SIZE: usize = 0x10;
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {
@@ -106,7 +102,6 @@ fn test_reset() {
 #[test]
 fn test_reset_fast() {
     const BUFFER_SIZE: usize = 0x10;
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {
@@ -141,7 +136,6 @@ fn test_reset_fast() {
 #[test]
 fn test_more_overflow() {
     const BUFFER_SIZE: usize = 0x10;
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {
@@ -182,7 +176,6 @@ fn test_more_overflow() {
 fn test_wrap_and_write() {
     const BUFFER_SIZE: usize = 0x10;
     let out_path = std::path::PathBuf::from("/media/ramdisk");
-    let _p = std::path::PathBuf::from("/media/ramdisk");
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {

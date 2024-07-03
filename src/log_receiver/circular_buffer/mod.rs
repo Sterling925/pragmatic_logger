@@ -3,7 +3,7 @@ pub mod data_writer;
 #[cfg(test)]
 mod circular_buffer_tests;
 #[cfg(test)]
-mod log_reciever_tests;
+mod log_receiver_tests;
 
 pub use data_writer::TextDataWriter;
 
@@ -62,7 +62,7 @@ impl<T: TextDataWriter + Send > CircularStringsBuffer<T>{
     }
 
     pub fn write_to_file_and_clear(&mut self, f: &std::path::Path) -> Result<(), &'static str> {
-        const DUMP_HEADER: &str = "\n"; // Just insert new line between data dumps
+        const DUMP_HEADER: &str = "\n"; // To insert new line between data dumps
         let qty = self.get_qty_in_buffer();
         let mut ans: Result<(), &'static str> = Ok(());
         if qty > 0 {
@@ -93,7 +93,7 @@ impl<T: TextDataWriter + Send > CircularStringsBuffer<T>{
             self.writer.close();
         }
         if qty < 10 {
-            // Dont bother with a full reset if small batches are being written.
+            // Don't bother with a full reset if small batches are being written.
             self.reset_fast();
         } else {
             // Else do a full reset and clear of all strings in buffer.

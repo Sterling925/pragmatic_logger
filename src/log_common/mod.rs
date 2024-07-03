@@ -1,9 +1,13 @@
 // log common module
 
+/// Get current time from Chrono in Local timezone
 pub fn get_time_now() -> chrono::DateTime<chrono::offset::Local> {
     chrono::offset::Local::now()
 }
 
+/// Add padding to string keep text alligned
+/// 
+/// Appends spaces to make line the target length
 fn pad_string(target_length: usize, line: &mut String) {
     const PADDING_CHAR: char = ' '; // single space
     const PADDING_CHAR_3: &str = "   "; // three spaces
@@ -29,6 +33,8 @@ pub struct LogData {
 }
 
 impl LogData {
+
+    /// Construct new log message
     pub fn new(
         level: Level,
         time_stamp: chrono::DateTime<chrono::offset::Local>,
@@ -41,10 +47,14 @@ impl LogData {
         }
     }
 
+    /// Read level of this log message
     pub fn level(&self) -> Level {
         self.level
     }
 
+    /// Read log message formatted into String
+    /// 
+    /// Output = "<timestamp> | <log level> | <payload line>"
     pub fn as_string(&self) -> String {
         const EXPECTED_DATE_LENGTH: usize = 35;
         let mut time_stamp = self.time_stamp.to_rfc3339();
@@ -54,6 +64,7 @@ impl LogData {
     }
 }
 
+/// Support log levels
 #[derive(PartialEq, std::cmp::PartialOrd, Clone, Copy)]
 pub enum Level {
     Trace = 4,
