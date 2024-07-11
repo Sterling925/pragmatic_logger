@@ -39,7 +39,10 @@ fn spawn_mocked(
 
 #[test]
 fn test_init_off() {
-    let fp = std::path::PathBuf::from("/media/ramdisk/test_init_off.txt");
+
+    // "TEST_DIRECTORY" assumed to be defined in [env] of `.cargo/config.toml`
+    let rw_dir = std::env::var("TEST_DIRECTORY").unwrap();
+    let fp = std::path::PathBuf::from(rw_dir).join("test_init_off.txt");
 
     let (sender, receiver) = std::sync::mpsc::channel::<log_common::LogData>();
 
@@ -54,7 +57,9 @@ fn test_init_off() {
 
 #[test]
 fn test_init_error() {
-    let fp = std::path::PathBuf::from("/media/ramdisk/test_init_error.txt");
+    // "TEST_DIRECTORY" assumed to be defined in [env] of `.cargo/config.toml`
+    let rw_dir = std::env::var("TEST_DIRECTORY").unwrap();
+    let fp = std::path::PathBuf::from(rw_dir).join("test_init_error.txt");
 
     let (sender, receiver) = std::sync::mpsc::channel::<log_common::LogData>();
 
@@ -84,7 +89,9 @@ fn test_init_error() {
 
 #[test]
 fn test_write_error() {
-    let fp = std::path::PathBuf::from("/media/ramdisk/test_write_error.txt");
+    // "TEST_DIRECTORY" assumed to be defined in [env] of `.cargo/config.toml`
+    let rw_dir = std::env::var("TEST_DIRECTORY").unwrap();
+    let fp = std::path::PathBuf::from(rw_dir).join("test_write_error.txt");
 
     let (sender, receiver) = std::sync::mpsc::channel::<log_common::LogData>();
 

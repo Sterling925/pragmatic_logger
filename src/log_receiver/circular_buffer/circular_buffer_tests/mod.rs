@@ -175,7 +175,9 @@ fn test_more_overflow() {
 #[test]
 fn test_wrap_and_write() {
     const BUFFER_SIZE: usize = 0x10;
-    let out_path = std::path::PathBuf::from("/media/ramdisk");
+    // "TEST_DIRECTORY" assumed to be defined in [env] of `.cargo/config.toml`
+    let rw_dir = std::env::var("TEST_DIRECTORY").unwrap();
+    let out_path = std::path::PathBuf::from(rw_dir);
 
     let mut b: std::vec::Vec<String> = std::vec::Vec::<String>::with_capacity(BUFFER_SIZE);
     for _ in 0..BUFFER_SIZE {

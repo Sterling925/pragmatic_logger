@@ -6,13 +6,11 @@ use super::data_writer::TextDataWriter;
 use std::sync::mpsc;
 
 
-
 pub fn get_mock_text_data_writer() -> (MockTextFile, MockDataWriter){
   let (tx,rx) = mpsc::channel();
   let f = MockTextFile::new(rx);
   let w = MockDataWriter::new(tx);
-
-  return ( f, w );
+  ( f, w )
 }
 
 
@@ -92,7 +90,7 @@ impl TextDataWriter for MockDataWriter{
 }
 
 
-// Extra catch if conditional compliation logic gets broken
+// Extra catch if conditional compilation logic becomes broken
 // This file must only be included in test builds
 #[cfg( not(test) )]
 compile_error!("For unit tests ONLY!");

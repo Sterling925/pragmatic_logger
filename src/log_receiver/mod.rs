@@ -28,7 +28,7 @@ impl BufferSize{
   /// 
   /// Returns size in qty of messages
   pub fn value(&self) -> usize{
-      return (*self).clone() as usize;
+      (*self) as usize
   }
 
   /// Verify assigned enum value is valid
@@ -36,7 +36,7 @@ impl BufferSize{
   /// Value must be a power of 2,
   /// in range 16..=2048
   pub fn is_valid(&self) -> bool{
-      let v = (*self).clone() as usize;
+      let v = (*self) as usize;
       let mut ans = true;
       if 1 != v.count_ones(){
           ans = false;
@@ -47,7 +47,7 @@ impl BufferSize{
       if 2048 < v{
           ans = false;
       }
-      return ans;
+      ans
   }
 }
 

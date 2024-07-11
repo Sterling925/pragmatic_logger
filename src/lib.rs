@@ -44,6 +44,7 @@ pub use log_receiver::BufferSize;
 /// fn main() -> Result::<(),String>{
 /// 
 ///     // Make logger instance
+///
 ///     const LOG_LOCATION : &'static str = "/media/ramdisk/my_program_log.txt";
 /// 
 ///     let log = pragmatic_logger::build_logger(LOG_LOCATION, pragmatic_logger::Level::Trace, pragmatic_logger::Level::Warn, pragmatic_logger::BufferSize::Size128)?;
@@ -87,7 +88,7 @@ pub fn build_logger(
         Err("Log file location does not seem to be valid. Are you trying to write to root?")
     } else if store_log_level < dump_log_level {
         Err("Must satisfy store_log_level >= dump_log_level")
-    } else if false == buffer_size.is_valid(){
+    } else if !buffer_size.is_valid(){
         Err("Specified buffer_size is not a supported value. Must be of type BufferSize")
     }
     else {
