@@ -1,9 +1,34 @@
+
 //! PragmaticLogger
+//! 
+//! A basic buffered logger that only writes to hard drive when there is important data.
+//!
+//! This is only intended as an experimental project, and not for production use. 
+//! 
+//! The goal being to optimize performance and hard-drive wear by only writing logs when something has failed.
+//! By buffering past messages, the information leading up to the failure can be captured.
+//! Additionally by having the logger in its own thread, the messages leading to a crash can also be recorded.
+//! 
+//! PragmaticLogger buffers log messages in a circular buffer.
+//! Only if an important message is received is the circular buffer 
+//! written to disk. In addition, if the application crashes,
+//! the current log buffer will be written to disk.
+//! 
+//! 
+//! # License
+//! 
 //! Licensed under the Apache License, Version 2.0 LICENSE-APACHE or
 //! <https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
 //! LICENSE-MIT or <https://opensource.org/licenses/MIT>, at your
 //! option.
-
+//! 
+//! THE SOFTWARE IS PROVIDED “AS IS”, WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+//! 
+//! # To get started
+//! 
+//! See `README.md` for information on using this project.
+//! 
+//!
 
 mod log_common;
 mod log_receiver;
@@ -12,30 +37,49 @@ pub mod log_sender;
 pub use log_common::Level;
 pub use log_receiver::BufferSize;
 
-/// A basic buffered logger that only writes to hard drive when there is important data
-///
-/// PragmaticLogger buffers log messages in a circular buffer.
-/// Only if an important message is received is the circular buffer 
-/// written to disk. In addition, if the application crashes,
-/// the current log buffer will be written to disk.
+
+/// Construct a new log sender and receiver pair
+/// 
+/// ## Params
+/// 
+/// **log_file_path**: &str
+/// 
+/// Path to output text file.
+/// such as `"./my_log.txt"` or `"./my_log.log"` 
+/// 
+/// **store_log_level**: [`Level`]
+/// 
+/// Messages this severe and more sever will be buffered when sent.
+/// Messages less severe than this level will be dropped.
+/// 
+/// For example:   
+/// store_log_level = Warn   
+/// Will drop messages Trace or Info,   
+/// and buffer messages of type Warn, Error   
+/// 
+/// **dump_log_level**: [`Level`]
+/// 
+/// Messages this severe and more sever will cause buffer to be dumped (written) to file.
+/// 
+/// For example:   
+/// dump_log_level = Warn   
+/// Will dump buffer to file if message is Warn or Error   
+/// 
+/// **buffer_size**: [`BufferSize`]
+/// 
+/// Specify the size of the buffer in messages.
+/// This is effectively the number of messages of history
+/// that will be included when an error occurs.
 /// 
 /// 
-/// # Quick start
-/// 
-/// The PragmaticLogger is used via the dependency injection pattern.
-/// In order to have the logger dump the logs on an application panic,
-/// The logger must be the main thread. IE it can not be a child thread 
-/// of the thread that crashed.
-/// 
-/// 
-/// Clone PragmaticLogger beside your repo
-/// Add 
-/// `pragmatic_logger = { path = "../pragmatic_logger", version = "<semver>" }` 
-/// to Cargo.toml
+/// # Example
 /// 
 /// ```rust
+/// 
+/// use pragmatic_logger::{log_sender::LogSender, Level, BufferSize, build_logger};
+/// 
 /// // Some program that does fascinating stuff
-/// fn my_program(log: pragmatic_logger::log_sender::LogSender){
+/// fn my_program(log: LogSender){
 ///     log.info_str("Running my program");
 ///     // do stuff
 /// }
@@ -43,21 +87,19 @@ pub use log_receiver::BufferSize;
 /// // Code to launch program
 /// fn main() -> Result::<(),String>{
 /// 
-///     // Make logger instance
-///
 ///     const LOG_LOCATION : &'static str = "/media/ramdisk/my_program_log.txt";
 /// 
-///     let log = pragmatic_logger::build_logger(LOG_LOCATION, pragmatic_logger::Level::Trace, pragmatic_logger::Level::Warn, pragmatic_logger::BufferSize::Size128)?;
+///     // Make logger instance
+///     let log = build_logger(LOG_LOCATION, Level::Trace, Level::Warn, BufferSize::Size128)?;
 ///     log.info_str("Running");
 /// 
-/// 
-///     // Launch program
+///     // Launch my program
 ///     let my_program_logger = log.clone();
 ///     let handle = std::thread::spawn(move || {
 ///         my_program( my_program_logger );
 ///     });
 /// 
-///     // Clean up
+///     // Wait for exit and log if thread panicked
 ///     if let Err(e) = handle.join(){
 ///         let error_message = format!("my_program returned: {:?}", e);
 ///         log.error_string(error_message);
@@ -65,19 +107,16 @@ pub use log_receiver::BufferSize;
 /// 
 ///     log.info_str("Done");
 /// 
+///     // Close logger receiver thread in a controlled way
 ///     log.shutdown();
 ///     Ok(())
 /// }
 /// ```
 
-
-/// Construct a new log sender and receiver pair
-///
-///  
 pub fn build_logger(
     log_file_path: &str,
-    store_log_level: log_common::Level,
-    dump_log_level: log_common::Level,
+    store_log_level: Level,
+    dump_log_level: Level,
     buffer_size: BufferSize,
 ) -> Result<log_sender::LogSender, &'static str> {
     let fp = std::path::PathBuf::from(log_file_path);

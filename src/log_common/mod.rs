@@ -5,7 +5,7 @@ pub fn get_time_now() -> chrono::DateTime<chrono::offset::Local> {
     chrono::offset::Local::now()
 }
 
-/// Add padding to string keep text alligned
+/// Add padding to string keep text aligned
 /// 
 /// Appends spaces to make line the target length
 fn pad_string(target_length: usize, line: &mut String) {
