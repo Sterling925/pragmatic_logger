@@ -59,7 +59,7 @@ pub use log_receiver::BufferSize;
 /// 
 /// **dump_log_level**: [`Level`]
 /// 
-/// Messages this severe and more sever will cause buffer to be dumped (written) to file.
+/// Messages this severe and more severe will cause buffer to be dumped (written) to file.
 /// 
 /// For example:   
 /// dump_log_level = Warn   
